@@ -3,8 +3,11 @@ package com.rakeshv.bitvavotrading.services;
 import com.bitvavo.api.Bitvavo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rakeshv.bitvavotrading.models.BitvavoApi;
+import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
+import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,5 +54,29 @@ public class BitvavoApiService {
         LocalDateTime localDateTime = Instant.ofEpochMilli(this.bitvavo.time().getLong("time"))
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
         log.info("Bitvavo server time is {}", localDateTime.toString());
+    }
+
+    public BitvavoTickerPrice getTickerPrice(String ticker) {
+        BitvavoTickerFilter filter = BitvavoTickerFilter.builder()
+                .market(ticker).build();
+
+        return getTickerPrice(filter);
+    }
+
+    private BitvavoTickerPrice getTickerPrice(BitvavoTickerFilter filter) {
+        JSONArray response = bitvavo.tickerPrice(new JSONObject(filter.toString()));
+
+        for (int i = 0; i < response.length(); i++) {
+            JSONObject jsonObject = response.getJSONObject(i);
+            if (jsonObject != null && jsonObject.get("market").equals(filter.getMarket())) {
+                try {
+                    return mapper.readValue(jsonObject.toString(), BitvavoTickerPrice.class);
+                } catch (Exception e) {
+                    return BitvavoTickerPrice.builder().build();
+                }
+            }
+        }
+
+        return BitvavoTickerPrice.builder().build();
     }
 }
