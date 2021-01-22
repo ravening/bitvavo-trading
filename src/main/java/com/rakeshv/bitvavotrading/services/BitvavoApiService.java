@@ -1,8 +1,10 @@
 package com.rakeshv.bitvavotrading.services;
 
 import com.bitvavo.api.Bitvavo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rakeshv.bitvavotrading.models.BitvavoApi;
+import com.rakeshv.bitvavotrading.models.BitvavoAsset;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -78,5 +82,21 @@ public class BitvavoApiService {
         }
 
         return BitvavoTickerPrice.builder().build();
+    }
+
+    public List<BitvavoAsset> getBitvavoAssets() {
+        List<BitvavoAsset> assetList = new ArrayList<>();
+        JSONArray response = bitvavo.assets(new JSONObject());
+        response.forEach(asset -> {
+            BitvavoAsset bitvavoAsset = null;
+            try {
+                bitvavoAsset = mapper.readValue(asset.toString(), BitvavoAsset.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            assetList.add(bitvavoAsset);
+        });
+
+        return assetList;
     }
 }
