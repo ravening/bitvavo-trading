@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rakeshv.bitvavotrading.models.BitvavoApi;
 import com.rakeshv.bitvavotrading.models.BitvavoAsset;
+import com.rakeshv.bitvavotrading.models.BitvavoBalance;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
 import lombok.RequiredArgsConstructor;
@@ -98,5 +99,22 @@ public class BitvavoApiService {
         });
 
         return assetList;
+    }
+
+    public List<BitvavoBalance> getBtcBalance() {
+        List<BitvavoBalance> balanceList = new ArrayList<>();
+        JSONArray response = bitvavo.balance(new JSONObject());
+        for (int i = 0; i < response.length(); i++) {
+            JSONObject jsonObject = response.getJSONObject(i);
+            try {
+                if (jsonObject != null) {
+                    balanceList.add( mapper.readValue(jsonObject.toString(), BitvavoBalance.class));
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return balanceList;
     }
 }
