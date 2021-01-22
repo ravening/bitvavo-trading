@@ -1,6 +1,7 @@
 package com.rakeshv.bitvavotrading.services;
 
 import com.bitvavo.api.Bitvavo;
+import com.bitvavo.api.WebsocketClientEndpoint;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rakeshv.bitvavotrading.models.BitvavoApi;
@@ -38,7 +39,7 @@ public class BitvavoApiService {
     @Value("${bitvavo.resturl}")
     private String restUrl;
 
-    @Value("${bitvavo.wsurl")
+    @Value("${bitvavo.wsurl}")
     private String wsUrl;
 
     @PostConstruct
@@ -59,6 +60,26 @@ public class BitvavoApiService {
         LocalDateTime localDateTime = Instant.ofEpochMilli(this.bitvavo.time().getLong("time"))
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
         log.info("Bitvavo server time is {}", localDateTime.toString());
+
+        Bitvavo.Websocket ws = this.bitvavo.newWebsocket();
+        ws.setErrorCallback(new WebsocketClientEndpoint.MessageHandler() {
+            public void handleMessage(JSONObject response) {
+                System.out.println("Found ERROR, own callback." + response);
+            }
+        });
+
+        ws.time(new WebsocketClientEndpoint.MessageHandler() {
+            public void handleMessage(JSONObject responseObject) {
+                System.out.println(responseObject.getJSONObject("response").toString(2));
+            }
+        });
+        ws.subscriptionTicker("BTC-EUR", jsonObject -> log.info("!!!!!! {}", jsonObject.toString()));
+
+        ws.subscriptionTrades("BTC-EUR", new WebsocketClientEndpoint.MessageHandler() {
+           public void handleMessage(JSONObject responseObject) {
+               log.info("{}", responseObject.toString());
+           }
+        });
     }
 
     public BitvavoTickerPrice getTickerPrice(String ticker) {
