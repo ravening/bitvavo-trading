@@ -42,6 +42,8 @@ public class BitvavoApiService {
     @Value("${bitvavo.wsurl}")
     private String wsUrl;
 
+    protected static Bitvavo.Websocket websocket;
+
     @PostConstruct
     private synchronized void initBitvavoApiService() {
         mapper = new ObjectMapper();
@@ -62,6 +64,8 @@ public class BitvavoApiService {
         log.info("Bitvavo server time is {}", localDateTime.toString());
 
         Bitvavo.Websocket ws = this.bitvavo.newWebsocket();
+        websocket = ws;
+
         ws.setErrorCallback(new WebsocketClientEndpoint.MessageHandler() {
             public void handleMessage(JSONObject response) {
                 System.out.println("Found ERROR, own callback." + response);
@@ -73,13 +77,18 @@ public class BitvavoApiService {
                 System.out.println(responseObject.getJSONObject("response").toString(2));
             }
         });
-        ws.subscriptionTicker("BTC-EUR", jsonObject -> log.info("!!!!!! {}", jsonObject.toString()));
+        // Uncomment it to display logs in console
+//        ws.subscriptionTicker("BTC-EUR", jsonObject -> log.info("!!!!!! {}", jsonObject.toString()));
 
-        ws.subscriptionTrades("BTC-EUR", new WebsocketClientEndpoint.MessageHandler() {
-           public void handleMessage(JSONObject responseObject) {
-               log.info("{}", responseObject.toString());
-           }
-        });
+//        ws.subscriptionTrades("BTC-EUR", new WebsocketClientEndpoint.MessageHandler() {
+//           public void handleMessage(JSONObject responseObject) {
+//               log.info("{}", responseObject.toString());
+//           }
+//        });
+    }
+
+    public static Bitvavo.Websocket getWebsocket() {
+        return websocket;
     }
 
     public BitvavoTickerPrice getTickerPrice(String ticker) {
