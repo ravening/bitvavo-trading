@@ -11,8 +11,9 @@ Java application to fetch details from Bitvavo trading system
 ## Running the project
 
 1. Add the bitvavo api key, secret key in `application.properties` file
-2. Start the project using `mvn spring:boot-run`
-3. Hit the end points `localhost:8080/api/assets` or `localhost:8080/api/ticker/BTC-EUR`
+2. Start the project using `mvn spring:boot-run` or build jar file using `mvn clean packages -DskipTests`
+3. Run the jar using `java -jar target/bitvavo-trading-0.0.1.jar`
+4. Hit the end points `localhost:8080/api/assets` or `localhost:8080/api/ticker/BTC-EUR`
 
 ## Displaying BTC price in real time
 

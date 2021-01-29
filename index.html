@@ -5,14 +5,14 @@
 </head>
 <body>
 <h1>
-    <span id="messageGoesHere"></span>
+    BTC Price: <span id="messageGoesHere"></span>
 </h1>
 <script type="text/javascript">
     var ws = new WebSocket("ws://localhost:8026/websockets/btc");
 
     ws.onmessage = function(event) {
         var mySpan = document.getElementById("messageGoesHere");
-        mySpan.innerHTML=event.data;
+        mySpan.innerHTML= event.data;
     };
 
     ws.onerror = function(event){

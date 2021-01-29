@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rakeshv.bitvavotrading.models.BitvavoApi;
 import com.rakeshv.bitvavotrading.models.BitvavoAsset;
 import com.rakeshv.bitvavotrading.models.BitvavoBalance;
+import com.rakeshv.bitvavotrading.models.BitvavoBtcPrice;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,7 +44,7 @@ public class BitvavoApiService {
     @Value("${bitvavo.wsurl}")
     private String wsUrl;
 
-    protected static Bitvavo.Websocket websocket;
+    private static String btcPrice;
 
     @PostConstruct
     private synchronized void initBitvavoApiService() {
@@ -64,7 +66,6 @@ public class BitvavoApiService {
         log.info("Bitvavo server time is {}", localDateTime.toString());
 
         Bitvavo.Websocket ws = this.bitvavo.newWebsocket();
-        websocket = ws;
 
         ws.setErrorCallback(new WebsocketClientEndpoint.MessageHandler() {
             public void handleMessage(JSONObject response) {
@@ -77,18 +78,24 @@ public class BitvavoApiService {
                 System.out.println(responseObject.getJSONObject("response").toString(2));
             }
         });
-        // Uncomment it to display logs in console
-//        ws.subscriptionTicker("BTC-EUR", jsonObject -> log.info("!!!!!! {}", jsonObject.toString()));
+        ws.subscriptionTicker("BTC-EUR", jsonObject -> {
+            BitvavoBtcPrice bitvavoBtcPrice = null;
+            try {
+                bitvavoBtcPrice = mapper.readValue(jsonObject.toString(), BitvavoBtcPrice.class);
+                if (bitvavoBtcPrice != null) {
+                    btcPrice = bitvavoBtcPrice.getLastPrice();
+                    log.info("{}", bitvavoBtcPrice.toString());
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
 
 //        ws.subscriptionTrades("BTC-EUR", new WebsocketClientEndpoint.MessageHandler() {
 //           public void handleMessage(JSONObject responseObject) {
 //               log.info("{}", responseObject.toString());
 //           }
 //        });
-    }
-
-    public static Bitvavo.Websocket getWebsocket() {
-        return websocket;
     }
 
     public BitvavoTickerPrice getTickerPrice(String ticker) {
@@ -146,5 +153,9 @@ public class BitvavoApiService {
         }
 
         return balanceList;
+    }
+
+    public static String getBtcPrice() {
+        return btcPrice;
     }
 }

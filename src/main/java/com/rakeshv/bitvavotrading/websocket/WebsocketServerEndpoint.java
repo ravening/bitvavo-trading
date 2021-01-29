@@ -1,8 +1,5 @@
 package com.rakeshv.bitvavotrading.websocket;
 
-import com.bitvavo.api.Bitvavo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rakeshv.bitvavotrading.models.BitvavoBtcPrice;
 import com.rakeshv.bitvavotrading.services.BitvavoApiService;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
@@ -21,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 @ServerEndpoint(value = "/btc")
 @Slf4j
 public class WebsocketServerEndpoint {
-    private ObjectMapper mapper = new ObjectMapper();
     private static Set<Session> allSessions;
     static ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
 
@@ -29,9 +25,8 @@ public class WebsocketServerEndpoint {
     public void onOpen(Session session) {
         log.info("Connected, sessionID = " + session.getId());
         allSessions = session.getOpenSessions();
-        while (session.getOpenSessions().size() > 0) {
-            timer.scheduleAtFixedRate(() -> sendTimeToClient(allSessions), 0, 1, TimeUnit.SECONDS);
-        }
+        log.info("sessions size is " + session.getOpenSessions().size());
+        timer.scheduleAtFixedRate(() -> sendTimeToClient(allSessions), 0, 1, TimeUnit.SECONDS);
     }
 
     @OnMessage
@@ -46,21 +41,19 @@ public class WebsocketServerEndpoint {
     }
 
     private void sendTimeToClient(Set<Session> allSessions) {
-        Bitvavo.Websocket websocket = BitvavoApiService.getWebsocket();
-        websocket.subscriptionTicker("BTC-EUR", jsonObject -> {
-            allSessions.forEach(s -> {
-                try {
-                    BitvavoBtcPrice btcPrice = mapper.readValue(jsonObject.toString(), BitvavoBtcPrice.class);
-                    s.getBasicRemote().sendText(btcPrice.toString());
-                } catch (Exception e) {
+        try {
+            String btcPrice = BitvavoApiService.getBtcPrice();
+            if (btcPrice != null) {
+                allSessions.forEach(s -> {
                     try {
-                        s.close();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
+                        s.getBasicRemote().sendText(btcPrice);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    log.error("Exception {}", e.getMessage());
-                }
-            });
-        });
+                });
+            }
+        } catch (Exception e) {
+            log.error("Exception: {}", e.getMessage());
+        }
     }
 }
