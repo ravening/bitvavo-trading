@@ -10,7 +10,6 @@ import com.rakeshv.bitvavotrading.models.BitvavoBalance;
 import com.rakeshv.bitvavotrading.models.BitvavoBtcPrice;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

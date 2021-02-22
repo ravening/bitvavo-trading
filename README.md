@@ -4,9 +4,20 @@ Java application to fetch details from Bitvavo trading system
 
 ## Prerequisites
 
-1. Git clone the bitvavo jaa library from https://github.com/bitvavo/java-bitvavo-api
-2. Run `mvn clean install` so that jars are pushed to local mvn repo
-3. Signup with bitvavo and get api/secret key
+```
+Java
+Docker
+Maven
+```
+
+### Building packages from scratch
+
+If you want to make source code changes then follow the below prerequisites
+
+1. Git clone the bitvavo java library from https://github.com/bitvavo/java-bitvavo-api
+2. cd `java-bitvavo-api`
+3. Run `mvn clean install` so that jars are pushed to local mvn repo
+4. Signup with bitvavo and get api/secret key
 
 ## Running the project
 
@@ -17,5 +28,11 @@ Java application to fetch details from Bitvavo trading system
 
 ## Displaying BTC price in real time
 
-Open the file `index.html` present in the root of the project. This will initiate a websocket\
-connection with the server and the BTC price will be displayed in real time.
+To see the bitcoin price in real time, navigate to
+
+```html
+http://localhost:8080
+```
+
+You can change the source code to monitor for other cryptocurrencies as well
+
