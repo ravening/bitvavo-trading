@@ -36,3 +36,16 @@ http://localhost:8080
 
 You can change the source code to monitor for other cryptocurrencies as well
 
+## Running in Docker
+
+Build the docker image using
+
+```
+./mvnw spring-boot:build-image -DskipTests
+```
+
+Start the container
+
+```
+docker run -it -d -p 8080:8080 -p 8026:8026 --rm --name bitvavo-trading  bitvavo-trading:0.0.1
+```
