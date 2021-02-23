@@ -38,6 +38,11 @@ public class WebsocketServerEndpoint {
     public void onClose(Session session, CloseReason closeReason) {
         System.out.println("Session " + session.getId() +
                 " closed because " + closeReason);
+        try {
+            session.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendTimeToClient(Set<Session> allSessions) {
@@ -45,10 +50,12 @@ public class WebsocketServerEndpoint {
             String btcPrice = BitvavoApiService.getBtcPrice();
             if (btcPrice != null) {
                 allSessions.forEach(s -> {
-                    try {
-                        s.getBasicRemote().sendText(btcPrice);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (s.isOpen()) {
+                        try {
+                            s.getBasicRemote().sendText(btcPrice);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }

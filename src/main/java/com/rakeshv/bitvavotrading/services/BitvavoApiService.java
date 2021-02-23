@@ -10,10 +10,12 @@ import com.rakeshv.bitvavotrading.models.BitvavoBalance;
 import com.rakeshv.bitvavotrading.models.BitvavoBtcPrice;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerFilter;
 import com.rakeshv.bitvavotrading.models.BitvavoTickerPrice;
+import com.rakeshv.bitvavotrading.models.PriceEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -29,6 +31,7 @@ public class BitvavoApiService {
 
     private Bitvavo bitvavo;
     private ObjectMapper mapper;
+    private final ApplicationEventPublisher publisher;
 
     @Value("${bitvavo.apikey}")
     private String bitvavoApiKey;
@@ -44,10 +47,13 @@ public class BitvavoApiService {
 
     private static String btcPrice;
 
+    BitvavoApiService(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
+
     @PostConstruct
     private synchronized void initBitvavoApiService() {
         mapper = new ObjectMapper();
-
         BitvavoApi bitvavoApi = BitvavoApi.builder()
                 .apiKey(bitvavoApiKey)
                 .secretKey(bitvavoSecretKey)
@@ -80,8 +86,11 @@ public class BitvavoApiService {
             BitvavoBtcPrice bitvavoBtcPrice = null;
             try {
                 bitvavoBtcPrice = mapper.readValue(jsonObject.toString(), BitvavoBtcPrice.class);
-                if (bitvavoBtcPrice != null) {
+                if (bitvavoBtcPrice != null && bitvavoBtcPrice.getLastPrice() != null) {
                     btcPrice = bitvavoBtcPrice.getLastPrice();
+                    PriceEvent event = PriceEvent.builder()
+                            .name("BTC").price(btcPrice).build();
+                    publisher.publishEvent(event);
                     log.info("{}", bitvavoBtcPrice.toString());
                 }
             } catch (JsonProcessingException e) {
