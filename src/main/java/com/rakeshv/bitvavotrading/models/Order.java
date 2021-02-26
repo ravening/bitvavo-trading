@@ -11,11 +11,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Trade {
-    private String action;
-    private BigDecimal price;
-    private BigDecimal quantity;
+public class Order {
     private String crypto;
-    private BigDecimal tradeprice;
-    private String notify;
+    private String action;
+    private String orderType;
+    private BigDecimal amount;
+    private BigDecimal price;
 }
